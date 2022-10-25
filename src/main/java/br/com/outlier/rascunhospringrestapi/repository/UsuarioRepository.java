@@ -7,4 +7,6 @@ import br.com.outlier.rascunhospringrestapi.model.entity.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long>, JpaSpecificationExecutor<Usuario> {
 
+	public Usuario findByEmail(String email);
+
 }

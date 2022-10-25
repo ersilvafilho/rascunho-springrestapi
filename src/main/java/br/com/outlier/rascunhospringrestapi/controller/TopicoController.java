@@ -7,7 +7,12 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,18 +45,21 @@ public class TopicoController {
 	private CursoRepository cursoRepository;
 
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> listar(@RequestBody(required = false) TopicoQueryForm topicoQueryForm) {
+	@Cacheable(value = "topicos.listar")
+	public ResponseEntity<Map<String, Object>> listar(@RequestBody(required = false) TopicoQueryForm topicoQueryForm,
+			@PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = 5) Pageable page) {
 		List<TopicoDTO> lista = null;
 		if (topicoQueryForm == null) {
-			lista = topicoRepository.findAll().stream().map(TopicoDTO::new).toList();
+			lista = topicoRepository.findAll(page).stream().map(TopicoDTO::new).toList();
 		} else {
-			lista = topicoRepository.findAll(Example.of(topicoQueryForm.toTopico())).stream().map(TopicoDTO::new).toList();
+			lista = topicoRepository.findAll(Example.of(topicoQueryForm.toTopico()), page).stream().map(TopicoDTO::new).toList();
 		}
 		return ResponseEntity.ok(Map.of("responseContent", Map.of("topicos", lista)));
 	}
 
-	@Transactional
 	@PostMapping
+	@Transactional
+	@CacheEvict(value = "topicos.listar", allEntries = true)
 	public ResponseEntity<Map<String, Object>> cadastrar(@RequestBody @Valid TopicoCreateForm topicoForm, UriComponentsBuilder uriComponentsBuilder) {
 		TopicoDTO dto = new TopicoDTO(topicoRepository.save(topicoForm.toTopico(usuarioRepository, cursoRepository)));
 		return ResponseEntity.created(uriComponentsBuilder.path("/topicos/{id}").buildAndExpand(dto.getId()).toUri()).body(Map.of("responseContent", Map.of("topico", dto)));
@@ -65,6 +73,7 @@ public class TopicoController {
 
 	@Transactional
 	@PutMapping("/{id}")
+	@CacheEvict(value = "topicos.listar", allEntries = true)
 	public ResponseEntity<Map<String, Object>> atualizar(@PathVariable Long id, @RequestBody @Valid TopicoUpdateForm topicoForm) {
 		Topico topico = topicoForm.atualizar(id, topicoRepository);
 		topicoRepository.save(topico);
@@ -73,6 +82,7 @@ public class TopicoController {
 
 	@Transactional
 	@DeleteMapping("/{id}")
+	@CacheEvict(value = "topicos.listar", allEntries = true)
 	public ResponseEntity<Map<String, Object>> remover(@PathVariable Long id) {
 		topicoRepository.deleteById(id);
 		return ResponseEntity.ok(Map.of("responseContent", Map.of("mensagem", "Operação realizada com sucesso!")));
