@@ -52,7 +52,7 @@ public class AutenticacaoJWTFilter extends OncePerRequestFilter {
 			Enumeration<String> headerNames = request.getHeaderNames();
 			while (headerNames.hasMoreElements()) {
 				String h = headerNames.nextElement();
-				log.debug(String.format("%s (%s) => %s", h, h.length(), request.getHeader(h)));
+				log.trace(String.format("%s (%s) => %s", h, h.length(), request.getHeader(h)));
 			}
 		}
 

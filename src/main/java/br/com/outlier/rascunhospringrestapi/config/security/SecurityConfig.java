@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,7 @@ import br.com.outlier.rascunhospringrestapi.util.TokenUtil;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-	
+
 	@Autowired
 	private TokenUtil tokenUtil;
 	@Autowired
@@ -31,18 +32,34 @@ public class SecurityConfig {
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
 		return authenticationConfiguration.getAuthenticationManager();
 	}
-	
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		
+		//http.authorizeHttpRequests().anyRequest().permitAll().and().csrf().disable();
+
 		http.authorizeHttpRequests()
+		.antMatchers("/h2-console/**").permitAll()
+		.antMatchers("/swagger-ui/**").permitAll()
 		.antMatchers(HttpMethod.POST, "/auth").permitAll()
-		.antMatchers(HttpMethod.GET, "/topicos", "/topicos/*").permitAll()
-		.anyRequest().authenticated()
+		.antMatchers(HttpMethod.GET, "/topicos").permitAll()
+		.antMatchers(HttpMethod.POST, "/topicos/*").hasAuthority("Aluno")
+		.antMatchers(HttpMethod.DELETE, "**").hasAuthority("Administrador")
+		.antMatchers(HttpMethod.GET, "/usuarios").hasAnyAuthority("Administrador")
+		.antMatchers("/actuator/**").permitAll()
+		.anyRequest().authenticated()		
 		.and().csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 		.and().addFilterBefore(new AutenticacaoJWTFilter(tokenUtil, usuarioRepository), UsernamePasswordAuthenticationFilter.class);
 
+		// apenas para permitir o h2-console
+		http.headers().frameOptions().disable();
+
 		return http.build();
+	}
+
+	@Bean
+	public WebSecurityCustomizer ignoringCustomizer() {
+		return (web) -> web.ignoring().antMatchers("/**.html", "/v3/**", "/webjars/**","/configuration/**", "/swagger-resources/**");
 	}
 
 	@Bean
