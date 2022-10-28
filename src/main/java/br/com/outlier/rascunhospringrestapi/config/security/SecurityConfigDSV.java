@@ -1,6 +1,5 @@
 package br.com.outlier.rascunhospringrestapi.config.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -14,21 +13,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import br.com.outlier.rascunhospringrestapi.config.security.filter.AutenticacaoJWTFilter;
-import br.com.outlier.rascunhospringrestapi.repository.UsuarioRepository;
-import br.com.outlier.rascunhospringrestapi.util.TokenUtil;
 
 @Configuration
 @EnableWebSecurity
-@Profile("prd")
-public class SecurityConfig {
-
-	@Autowired
-	private TokenUtil tokenUtil;
-	@Autowired
-	private UsuarioRepository usuarioRepository;
+@Profile("dsv")
+public class SecurityConfigDSV {
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -51,7 +40,7 @@ public class SecurityConfig {
 		.antMatchers("/actuator/**").permitAll()
 		.anyRequest().authenticated()		
 		.and().csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and().addFilterBefore(new AutenticacaoJWTFilter(tokenUtil, usuarioRepository), UsernamePasswordAuthenticationFilter.class);
+		.and().httpBasic();
 
 		// apenas para permitir o h2-console
 		http.headers().frameOptions().disable();

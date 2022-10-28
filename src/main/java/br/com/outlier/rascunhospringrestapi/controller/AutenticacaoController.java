@@ -3,6 +3,7 @@ package br.com.outlier.rascunhospringrestapi.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.outlier.rascunhospringrestapi.form.LoginForm;
 import br.com.outlier.rascunhospringrestapi.util.TokenUtil;
 
+@Profile("prd")
 @RestController
 @RequestMapping("/auth")
 public class AutenticacaoController {
