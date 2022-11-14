@@ -22,7 +22,7 @@ import br.com.outlier.rascunhospringrestapi.util.TokenUtil;
 
 @Configuration
 @EnableWebSecurity
-@Profile("prd")
+@Profile(value = { "prd", "test" })
 public class SecurityConfig {
 
 	@Autowired
