@@ -47,7 +47,7 @@ public class SecurityConfig {
 		.antMatchers(HttpMethod.GET, "/topicos").permitAll()
 		.antMatchers(HttpMethod.POST, "/topicos/*").hasAuthority("Aluno")
 		.antMatchers(HttpMethod.DELETE, "**").hasAuthority("Administrador")
-		.antMatchers(HttpMethod.GET, "/usuarios").hasAnyAuthority("Administrador")
+		.antMatchers(HttpMethod.GET, "/usuarios").hasAuthority("Administrador")
 		.antMatchers("/actuator/**").permitAll()
 		.anyRequest().authenticated()		
 		.and().csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

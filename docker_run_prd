@@ -1,0 +1,5 @@
+SPRING_PROFILES_ACTIVE=prd
+APP_DB_URL=jdbc:h2:mem:rascunho-spring-rest-api
+APP_DB_USERNAME=sa
+APP_DB_PWD=
+APP_JWT_SECRET=XDL7S6+g_;t$0o@-POmk73Hx>LmJ^zaTl`n,<Rx"E4~er%EoW_~zI=Tjr4iQ?RN

@@ -53,8 +53,8 @@ class TopicoControllerTest extends GenericControllerTest {
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)).andExpect(MockMvcResultMatchers.status().isCreated()).andReturn();
 
 		// response
-		JSONObject jsonTopico = new JSONObject(new String(andReturn.getResponse().getContentAsString().getBytes("ISO-8859-1")))
-				.getJSONObject("responseContent").getJSONObject("topico");
+		JSONObject jsonTopico = new JSONObject(new String(andReturn.getResponse().getContentAsString())).getJSONObject("responseContent")
+				.getJSONObject("topico");
 		String tituloCadastrado = jsonTopico.getString("titulo");
 		String mensagemCadastrada = jsonTopico.getString("mensagem");
 		Long cursoIdCadastrado = jsonTopico.getJSONObject("curso").getLong("id");

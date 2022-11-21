@@ -1,5 +1,6 @@
 package br.com.outlier.rascunhospringrestapi.config.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -13,11 +14,21 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import br.com.outlier.rascunhospringrestapi.config.security.filter.AutenticacaoJWTFilter;
+import br.com.outlier.rascunhospringrestapi.repository.UsuarioRepository;
+import br.com.outlier.rascunhospringrestapi.util.TokenUtil;
 
 @Configuration
 @EnableWebSecurity
 @Profile("dsv")
 public class SecurityConfigDSV {
+
+	@Autowired
+	private TokenUtil tokenUtil;
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -36,11 +47,12 @@ public class SecurityConfigDSV {
 		.antMatchers(HttpMethod.GET, "/topicos").permitAll()
 		.antMatchers(HttpMethod.POST, "/topicos/*").hasAuthority("Aluno")
 		.antMatchers(HttpMethod.DELETE, "**").hasAuthority("Administrador")
-		.antMatchers(HttpMethod.GET, "/usuarios").hasAnyAuthority("Administrador")
+		.antMatchers(HttpMethod.GET, "/usuarios").hasAuthority("Administrador")
 		.antMatchers("/actuator/**").permitAll()
 		.anyRequest().authenticated()		
 		.and().csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and().httpBasic();
+		.and().httpBasic()
+		.and().addFilterBefore(new AutenticacaoJWTFilter(tokenUtil, usuarioRepository), UsernamePasswordAuthenticationFilter.class);
 
 		// apenas para permitir o h2-console
 		http.headers().frameOptions().disable();
@@ -50,7 +62,7 @@ public class SecurityConfigDSV {
 
 	@Bean
 	public WebSecurityCustomizer ignoringCustomizer() {
-		return (web) -> web.ignoring().antMatchers("/**.html", "/v3/**", "/webjars/**","/configuration/**", "/swagger-resources/**");
+		return (web) -> web.ignoring().antMatchers("/**.html", "/v3/**", "/webjars/**", "/configuration/**", "/swagger-resources/**");
 	}
 
 	@Bean
